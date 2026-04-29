@@ -1,34 +1,26 @@
-name: CI/CD Pipeline
+name: End-to-End CI/CD
 
 on:
   push:
     branches: [ "main" ]
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Build Docker Image
-        run: docker build -t my-cicd-app .
-
-      - name: Deploy to EC2
+      - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # Stop any existing container
-            sudo docker stop my-running-app || true
-            sudo docker rm my-running-app || true
-            
-            # Build the image locally on the EC2
             cd ~/my-cicd-project
             git pull origin main
-            sudo docker build -t my-cicd-app .
-            
-            # Run the new container
-            sudo docker run -d --name my-running-app -p 80:80 my-cicd-app
+            docker build -t my-cicd-app .
+            docker stop my-app || true
+            docker rm my-app || true
+            docker run -d --name my-app -p 80:80 my-cicd-app
