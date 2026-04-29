@@ -20,6 +20,7 @@ jobs:
           script: |
             cd ~/my-cicd-project
             git pull origin main
+            # The build and run commands
             docker build -t my-cicd-app .
             docker stop my-app || true
             docker rm my-app || true
